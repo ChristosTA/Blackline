@@ -16,8 +16,35 @@ export const getProductsByCategory = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-  try { res.status(201).json(await svc.createProduct(req.validated)); }
-  catch (error) { res.status(500).json({ message: "Server error", error: error.message }); }
+  try {
+    // Δούλεψε είτε έχεις validation middleware είτε όχι
+    const payload = req.validated ?? req.body;
+
+    if (!payload) {
+      return res.status(400).json({ message: "Invalid request body" });
+    }
+
+    const { name, description, price, image, category } = payload;
+
+    // Basic required checks (σύμφωνα με το schema)
+    if (!name || !description || price == null || !category || !image) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const created = await svc.createProduct({
+      name,
+      description,
+      price: Number(price),
+      image,
+      category,
+    });
+
+    return res.status(201).json({ success: true, product: created });
+  } catch (error) {
+    return res
+        .status(error.status || 500)
+        .json({ message: error.message || "Server error" });
+  }
 };
 
 export const toggleFeaturedProduct = async (req, res) => {

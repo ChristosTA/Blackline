@@ -16,6 +16,29 @@ export const useProductStore = create((set, get) => ({
 
 	setProducts: (list) => set({ products: asArray(list) }),
 
+	createProduct: async (payload) => {
+		set({ loading: true });
+		try {
+			// POST /api/products
+			const { data } = await axios.post("/products", payload, { withCredentials: true });
+
+			// Δέχεται και τα δύο σχήματα: {success, product} ή σκέτο product
+			const created = data?.product ?? data;
+
+			set((state) => ({
+				products: [created, ...state.products],
+				loading: false,
+			}));
+
+			toast.success("Product created");
+			return created;
+		} catch (error) {
+			set({ loading: false });
+			const msg = error?.response?.data?.message || "Error creating product";
+			toast.error(msg);
+			throw error;
+		}
+	},
 	fetchAllProducts: async () => {
 		set({ loading: true });
 		try {
