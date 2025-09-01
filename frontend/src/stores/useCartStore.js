@@ -7,118 +7,95 @@ const resolveId = (x) =>
 	typeof x === "string" ? x : x?._id ?? x?.id ?? x?.productId ?? x?.product?._id;
 
 export const useCartStore = create((set, get) => ({
-	cart: [],           // <- το μοναδικό source of truth για items στο UI
-	subtotal: 0,
-	total: 0,
+	cart: [],
 	coupon: null,
+	total: 0,
+	subtotal: 0,
 	isCouponApplied: false,
 
-	// ----------------- helpers -----------------
-	_setCart: (items) => {
-		const cart = Array.isArray(items) ? items : [];
-		const subtotal = cart.reduce(
-			(sum, it) => sum + (it.price ?? it.product?.price ?? 0) * (it.quantity || 0),
-			0
-		);
-		const { coupon, isCouponApplied } = get();
-		const total =
-			isCouponApplied && coupon
-				? subtotal - subtotal * (coupon.discountPercentage / 100)
-				: subtotal;
-
-		set({ cart, subtotal, total });
-	},
-
-	// ----------------- READ -----------------
-	getCartItems: async () => {
+	getMyCoupon: async () => {
 		try {
-			const { data } = await axios.get("/cart");
-			get()._setCart(data);
-			return data;
-		} catch (err) {
-			if (err?.response?.status !== 401) {
-				toast.error(err?.response?.data?.message || "Failed to load cart");
-			}
-			set({ cart: [], subtotal: 0, total: 0 });
-			return [];
+			const response = await axios.get("/coupons");
+			set({ coupon: response.data });
+		} catch (error) {
+			console.error("Error fetching coupon:", error);
 		}
 	},
-	// συμβατότητα με παλιές κλήσεις
-	getCartProducts: async () => get().getCartItems(),
-
-	// ----------------- CREATE / UPDATE -----------------
-	addToCart: async (productOrId, quantity = 1) => {
-		try {
-			const id =
-				typeof productOrId === "string"
-					? productOrId
-					: productOrId?._id || productOrId?.id;
-
-			if (!id) throw new Error("No product id");
-
-			const { data } = await axios.post(
-				"/cart",
-				{ productId: id, quantity },
-				{ withCredentials: true }
-			);
-
-			set({ items: Array.isArray(data?.items) ? data.items : [] });
-			get().calculateTotals();
-			toast.success("Added to cart");
-		} catch (err) {
-			toast.error(err?.response?.data?.message || "Failed to add to cart");
-		}
-	},
-
-	updateQuantity: async (productOrId, quantity) => {
-		try {
-			const productId = resolveId(productOrId);
-			await axios.put(`/cart/${productId}`, { quantity });
-			await get().getCartItems();
-		} catch (err) {
-			toast.error(err?.response?.data?.message || "Failed to update quantity");
-			throw err;
-		}
-	},
-
-	// ----------------- DELETE -----------------
-	removeFromCart: async (productOrId) => {
-		try {
-			const productId = resolveId(productOrId);
-			await axios.delete("/cart", { data: { productId } });
-			await get().getCartItems();
-			toast.success("Removed from cart");
-		} catch (err) {
-			toast.error(err?.response?.data?.message || "Failed to remove");
-			throw err;
-		}
-	},
-
-	removeAllFromCart: async () => {
-		try {
-			await axios.delete("/cart");
-			set({ cart: [], subtotal: 0, total: 0 });
-			toast.success("Cart cleared");
-		} catch (err) {
-			toast.error(err?.response?.data?.message || "Failed to clear cart");
-			throw err;
-		}
-	},
-
-	// ----------------- COUPON (αν τα χρησιμοποιείς) -----------------
 	applyCoupon: async (code) => {
 		try {
-			const { data } = await axios.post("/coupons/validate", { code });
-			set({ coupon: data, isCouponApplied: true });
-			get()._setCart(get().cart); // επαναυπολογισμός totals
-			toast.success("Coupon applied");
-		} catch (err) {
-			toast.error(err?.response?.data?.message || "Failed to apply coupon");
+			const response = await axios.post("/coupons/validate", { code });
+			set({ coupon: response.data, isCouponApplied: true });
+			get().calculateTotals();
+			toast.success("Coupon applied successfully");
+		} catch (error) {
+			toast.error(error.response?.data?.message || "Failed to apply coupon");
 		}
 	},
 	removeCoupon: () => {
 		set({ coupon: null, isCouponApplied: false });
-		get()._setCart(get().cart);
+		get().calculateTotals();
 		toast.success("Coupon removed");
+	},
+
+	getCartItems: async () => {
+		try {
+			const res = await axios.get("/cart");
+			set({ cart: res.data });
+			get().calculateTotals();
+		} catch (error) {
+			set({ cart: [] });
+			toast.error(error.response.data.message || "An error occurred");
+		}
+	},
+	clearCart: async () => {
+		set({ cart: [], coupon: null, total: 0, subtotal: 0 });
+	},
+	addToCart: async (product) => {
+		try {
+			await axios.post("/cart", { productId: product._id });
+			toast.success("Product added to cart");
+
+			set((prevState) => {
+				const existingItem = prevState.cart.find((item) => item._id === product._id);
+				const newCart = existingItem
+					? prevState.cart.map((item) =>
+						item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
+					)
+					: [...prevState.cart, { ...product, quantity: 1 }];
+				return { cart: newCart };
+			});
+			get().calculateTotals();
+		} catch (error) {
+			toast.error(error.response.data.message || "An error occurred");
+		}
+	},
+	removeFromCart: async (productId) => {
+		await axios.delete(`/cart`, { data: { productId } });
+		set((prevState) => ({ cart: prevState.cart.filter((item) => item._id !== productId) }));
+		get().calculateTotals();
+	},
+	updateQuantity: async (productId, quantity) => {
+		if (quantity === 0) {
+			get().removeFromCart(productId);
+			return;
+		}
+
+		await axios.put(`/cart/${productId}`, { quantity });
+		set((prevState) => ({
+			cart: prevState.cart.map((item) => (item._id === productId ? { ...item, quantity } : item)),
+		}));
+		get().calculateTotals();
+	},
+	calculateTotals: () => {
+		const { cart, coupon } = get();
+		const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+		let total = subtotal;
+
+		if (coupon) {
+			const discount = subtotal * (coupon.discountPercentage / 100);
+			total = subtotal - discount;
+		}
+
+		set({ subtotal, total });
 	},
 }));

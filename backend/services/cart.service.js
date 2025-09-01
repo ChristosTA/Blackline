@@ -44,7 +44,7 @@ export async function getCartProducts(userId) {
     const ids = (user.cartItems ?? []).map(i => i.id);
     if (!ids.length) return [];
 
-    const list = await products.findByIds(ids);              // υπάρχει στο repo
+    const list = await products.findMany({ _id: { $in: ids } });
     const map = new Map(list.map(p => [p._id.toString(), p]));
 
     // [{ product, quantity, _id }] για το UI
