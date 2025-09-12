@@ -1,5 +1,7 @@
 import * as payments from "../services/payment.service.js";
 
+
+
 export const createCheckoutSession = async (req, res) => {
 	try {
 		const data = await payments.createCheckoutSession(
