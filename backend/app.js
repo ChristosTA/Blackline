@@ -35,8 +35,8 @@ setupSwagger(app);
 
 // Serve frontend build (ίδιο origin)
 app.use(express.static(distPath));
-app.get("*", (_req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
+app.get(/.*/, (_req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
 });
 
 export default app;
