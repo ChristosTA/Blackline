@@ -6,7 +6,7 @@
 
 ## Node.js + MongoDB (REST API)
 ✅ Η εφαρμογή βασίζεται σε Node.js/Express με MongoDB και προσφέρει REST API.  
-⚠️ SSR (server‑side rendering): δεν υλοποιείται· το UI είναι client‑side (Vite/React SPA).
+⚠️ Επιλέχθηκε **CSR (Client-Side Rendering)** με React SPA, όπως επιτρέπει η εκφώνηση (CSR **ή** SSR).
 
 ## Δοκιμές & Swagger
 ✅ Περιλαμβάνονται Jest unit/integration tests και Swagger τεκμηρίωση.

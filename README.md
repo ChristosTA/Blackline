@@ -21,6 +21,12 @@ Full‑stack εφαρμογή ηλεκτρονικού εμπορίου με Rea
 ## 🗂 Domain Model
 ![ERD](docs/ERD.png)
 
+> Σημείωση: Κάθε `Order` έχει **0..1** `Coupon` (η σχέση στο διάγραμμα φαίνεται από την πλευρά του `Coupon`).
+
+
+### Architecture Notes
+See [DESIGN (EN)](./DESIGN.En.md) • [DESIGN (GR)](./DESIGN.md)
+
 ## 📂 Δομή έργου
 ```
 Blackline/
@@ -134,8 +140,11 @@ npm start
 - **Environment Variables** (Render Dashboard):  
   `NODE_ENV=production`, `PORT` (ή default Render),  
   `MONGO_URI`,  
-  `JWT_SECRET`, `REFRESH_TOKEN_SECRET`, `COOKIE_SECRET`,  
+  `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `COOKIE_SECRET`,  
   *(optional)* `STRIPE_SECRET_KEY`, `CLOUDINARY_URL`.
 
-## 📜 Άδεια
-MIT License – δείτε το αρχείο `LICENSE`.
+> Requires **Node 18/20/22 LTS** (recommended: `"engines": { "node": ">=18" }` in package.json).
+
+
+## 📜 License
+MIT License — see [LICENSE](./LICENSE).
