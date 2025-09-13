@@ -41,9 +41,9 @@ jest-html-reporters-*.html
 # Local env & secrets
 # -------------------------
 .env
-.env.*
+.env.example
 frontend/.env
-frontend/.env.*
+.env.example
 
 # -------------------------
 # OS / Editor junk
