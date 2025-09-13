@@ -35,8 +35,7 @@ ThreadCart/
 │ └─ src/ # React components/pages/stores
 └─ scripts/seed.js # αρχικά δεδομένα (προαιρετικό)
 
-shell
-Αντιγραφή κώδικα
+
 
 ## ⚙️ Περιβάλλον
 
@@ -76,14 +75,15 @@ markdown
 Διαθέσιμο στο http://localhost:5000
 Swagger: http://localhost:5000/api/docs
 
-Frontend
+2. **Frontend**
 
-bash
-Αντιγραφή κώδικα
+```bash
+
 cd frontend
 npm install
 npm run dev
 Άνοιγμα στο http://localhost:5173
+```
 
 🧪 Δοκιμές
 bash
@@ -101,38 +101,50 @@ markdown
 
 ---
 
-### Αξιολόγηση βάσει προδιαγραφών εργασίας
+## 🚀 Production Build & Deploy
 
-1. **Πολυεπίπεδη αρχιτεκτονική & React front‑end**
-    - Υπάρχει διαχωρισμός σε models, repositories, services, controllers και DTOs.
-    - Χρησιμοποιείται React για το front‑end και JWT‑based authentication/authorization.  
-      ✅ Καλύπτει την απαίτηση.
+### Local Build & Run
+```bash
+# 1) Build frontend
+cd frontend
+npm install
+npm run build
 
-2. **Υλοποίηση με Node.js + MongoDB και server‑side rendering (SSR)**
-    - Η εφαρμογή βασίζεται σε Node.js/Express με MongoDB και προσφέρει REST API.
-    - Ωστόσο η απόδοση του UI είναι μόνο client‑side (Vite/React SPA)· δεν υπάρχει SSR.  
-      ⚠️ Απαίτηση για SSR δεν καλύπτεται.
+# 2) Go back to project root and build backend
+cd ..
+npm install
+npm run build
 
-3. **Δοκιμές & Swagger**
-    - Περιλαμβάνει Jest unit και integration tests, καθώς και Swagger τεκμηρίωση.  
-      ✅ Καλύπτει την απαίτηση.
+# 3) Start production server (serves both backend + frontend build)
+npm start
+```
 
----
+## 🚀 Deployment on Render (LIVE)
 
-### Προτεινόμενες βελτιώσεις
+👉 Live URL: put your Render link here
 
-Η βασική έλλειψη είναι η απουσία server‑side rendering· χωρίς αυτό η εργασία 2 δεν θεωρείται πλήρης. Επιπλέον λείπουν αρχεία `.env.example` για να διευκολύνουν τη ρύθμιση περιβάλλοντος.
+Render Settings (Root project)
 
-:::task-stub{title="Προσθήκη server-side rendering"}
-1. Δημιούργησε φάκελο `backend/views/` και πρόσθεσε templates (π.χ. EJS ή Handlebars).
-2. Εγκατέστησε view engine και ρύθμισέ τη στο `backend/app.js` με `app.set('view engine', 'ejs')`.
-3. Πρόσθεσε νέα routes (π.χ. `backend/routes/view.route.js`) που αποδίδουν τα templates.
-4. Ενημέρωσε `backend/app.js` ώστε να χρησιμοποιεί τα view routes πριν από τα `express.static` middleware.
-5. Διατήρησε παράλληλα τα υπάρχοντα REST endpoints.
-   :::
+Build Command:
+````
+cd backend && npm run build
+````
 
-:::task-stub{title="Δημιουργία αρχείων .env.example"}
-1. Πρόσθεσε αρχείο `.env.example` στη ρίζα με όλες τις μεταβλητές backend (`MONGO_URI`, `ACCESS_TOKEN_SECRET`, κ.λπ.).
-2. Δημιούργησε `frontend/.env.example` με `VITE_STRIPE_PUBLISHABLE_KEY`.
-3. Ενημέρωσε το README ώστε να αναφέρει τα νέα αρχεία.
-   :::
+Start Command:
+`````
+npm backend && npm start
+`````
+
+## Environment Variables (configured in Render Dashboard):
+
+- NODE_ENV=production
+
+- PORT=10000 (or the default Render port)
+
+- MONGO_URI
+
+- JWT_SECRET, REFRESH_TOKEN_SECRET, COOKIE_SECRET
+
+- (optional) STRIPE_SECRET_KEY, CLOUDINARY_URL
+
+- Static files: The backend automatically serves the frontend/dist folder, so no separate static site is needed.
