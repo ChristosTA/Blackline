@@ -121,7 +121,7 @@ npm start
 
 ## 🚀 Deployment on Render (LIVE)
 
-👉 Live URL: put your Render link here
+👉 Live URL: https://eshopapp-zeay.onrender.com
 
 Render Settings (Root project)
 
